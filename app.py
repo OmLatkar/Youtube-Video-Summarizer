@@ -187,7 +187,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Ensure NLTK punkt tokenizer is downloaded
-nltk.download('punkt')
+nltk.download('punkt', download_dir='/tmp/nltk_data')
 
 # Load Whisper model
 @st.cache_resource
