@@ -205,14 +205,20 @@ def summarize_text(text, sentences_count=3):
 
 def download_youtube_audio(youtube_url):
     try:
-        # Install FFmpeg if not present
+        # Check if FFmpeg is available, install if not
         try:
-            import ffmpeg
-        except ImportError:
             import subprocess
-            import sys
-            subprocess.check_call([sys.executable, "-m", "pip", "install", "ffmpeg-python"])
-            import ffmpeg
+            # Check if ffmpeg exists
+            subprocess.run(["ffmpeg", "-version"], capture_output=True, check=True)
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            st.warning("FFmpeg not found - installing...")
+            try:
+                # Try to install ffmpeg (Linux/Ubuntu)
+                subprocess.run(["apt-get", "update"], check=True)
+                subprocess.run(["apt-get", "install", "-y", "ffmpeg"], check=True)
+            except Exception as e:
+                st.error(f"Failed to install FFmpeg: {str(e)}")
+                return None
 
         with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as tmp_file:
             tmp_path = tmp_file.name
