@@ -4,3 +4,4 @@ sumy
 openai-whisper
 torch
 nltk
+ffmpeg-python
