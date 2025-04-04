@@ -205,6 +205,15 @@ def summarize_text(text, sentences_count=3):
 
 def download_youtube_audio(youtube_url):
     try:
+        # Install FFmpeg if not present
+        try:
+            import ffmpeg
+        except ImportError:
+            import subprocess
+            import sys
+            subprocess.check_call([sys.executable, "-m", "pip", "install", "ffmpeg-python"])
+            import ffmpeg
+
         with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as tmp_file:
             tmp_path = tmp_file.name
 
@@ -214,34 +223,18 @@ def download_youtube_audio(youtube_url):
             'postprocessors': [{
                 'key': 'FFmpegExtractAudio',
                 'preferredcodec': 'mp3',
+                'preferredquality': '192',
             }],
             'quiet': True,
             'extract_flat': True,
-            'force_ipv4': True,
-            'socket_timeout': 30,
-            'retries': 10,
-            'fragment_retries': 10,
             'no_check_certificate': True,
-            'ignoreerrors': True,
-            'no_warnings': True,
-            'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-            'cookiefile': 'cookies.txt' if os.path.exists('cookies.txt') else None,
         }
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             st.info("Downloading YouTube audio...")
-            try:
-                ydl.download([youtube_url])
-                return tmp_path.replace('.mp3', '') + '.mp3'
-            except Exception as e:
-                st.error(f"YouTube download failed: {str(e)}")
-                st.info("If the issue persists, try:")
-                st.markdown("""
-                    1. Export YouTube cookies using a browser extension
-                    2. Place cookies.txt in the same directory
-                    3. Try again
-                """)
-                return None
+            ydl.download([youtube_url])
+            return tmp_path.replace('.mp3', '') + '.mp3'
+            
     except Exception as e:
         st.error(f"YouTube download failed: {str(e)}")
         return None
