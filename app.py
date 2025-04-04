@@ -10,7 +10,6 @@ import nltk
 import torch
 import asyncio
 import sys
-from io import StringIO
 
 # Windows event loop fix
 if sys.platform == "win32":
@@ -24,126 +23,165 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Inject custom CSS
+# Modern, clean color scheme
 st.markdown("""
     <style>
-        /* Base font size increase */
-        html, body, [class*="css"]  {
-            font-size: 18px !important;
+        /* Modern color palette */
+        :root {
+            --primary: #4361ee;
+            --primary-light: #4895ef;
+            --secondary: #3f37c9;
+            --accent: #f72585;
+            --dark: #1a1a2e;
+            --light: #f8f9fa;
+            --success: #4cc9f0;
+            --warning: #f8961e;
+            --danger: #ef233c;
+            --gray: #6c757d;
+        }
+        
+        /* Base styles */
+        html, body, [class*="css"] {
+            font-family: 'Inter', sans-serif;
+            color: var(--dark);
+            background-color: var(--light);
         }
         
         /* Main content area */
         .main .block-container {
             max-width: 95%;
-            padding-top: 2.5rem;
-            padding-bottom: 2.5rem;
+            padding: 2rem;
+            background-color: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            margin: 1rem;
         }
         
-        /* Sidebar enhancements */
+        /* Sidebar */
         [data-testid="stSidebar"] {
-            width: 400px !important;
-            min-width: 400px !important;
-        }
-        .sidebar .sidebar-content {
-            padding: 2.5rem 2rem;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            width: 320px !important;
+            border-right: none;
         }
         .sidebar-title {
-            font-size: 1.8rem !important;
-            font-weight: bold !important;
-            margin-bottom: 2rem !important;
-        }
-        .sidebar-section {
-            margin-bottom: 2.5rem;
-        }
-        .sidebar-instructions {
-            font-size: 1.3rem !important;
-        }
-        
-        /* Title and headers */
-        h1 {
-            font-size: 2.8rem !important;
-        }
-        h2 {
-            font-size: 2.2rem !important;
-        }
-        h3 {
-            font-size: 1.8rem !important;
+            color: var(--primary);
+            font-size: 1.5rem !important;
+            font-weight: 600 !important;
+            margin-bottom: 1.5rem !important;
         }
         
         /* Input fields */
         .stTextInput input, .stTextArea textarea {
-            font-size: 1.3rem !important;
-            padding: 0.8rem !important;
+            border-radius: 12px !important;
+            border: 2px solid #e9ecef !important;
+            padding: 0.75rem 1rem !important;
+            font-size: 1rem !important;
         }
-        
-        /* Slider enhancements */
-        div[data-baseweb="slider"] {
-            padding: 1.5rem 0 !important;
-        }
-        .stSlider [role="slider"] {
-            width: 25px !important;
-            height: 25px !important;
-        }
-        .stSlider [data-testid="stThumbValue"] {
-            font-size: 1.3rem !important;
-        }
-        
-        /* Text areas - especially important for summary */
-        .stTextArea [data-baseweb=base-input] {
-            min-height: 300px;
-            font-size: 1.4rem !important;
-            line-height: 1.6 !important;
-            padding: 1.2rem !important;
-        }
-        /* Scrollbar styling */
-        .stTextArea textarea::-webkit-scrollbar {
-            width: 15px !important;
-            height: 15px !important;
-        }
-        .stTextArea textarea::-webkit-scrollbar-thumb {
-            background-color: #4a4a4a !important;
-            border-radius: 10px !important;
-        }
-        .stTextArea textarea::-webkit-scrollbar-track {
-            background-color: #f0f0f0 !important;
+        .stTextInput input:focus, .stTextArea textarea:focus {
+            border-color: var(--primary) !important;
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15) !important;
         }
         
         /* Buttons */
         .stButton>button {
-            width: 100%;
-            padding: 1rem 1.5rem;
-            font-size: 1.4rem !important;
-            height: auto !important;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%) !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 12px !important;
+            padding: 0.75rem 1.5rem !important;
+            font-weight: 500 !important;
+            transition: all 0.3s ease !important;
+        }
+        .stButton>button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.2) !important;
         }
         
         /* Tabs */
         .stTabs [data-baseweb="tab-list"] {
-            gap: 1.5rem;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
         }
         .stTabs [data-baseweb="tab"] {
-            padding: 1rem 2rem;
-            font-size: 1.4rem !important;
-            height: auto !important;
+            background: transparent !important;
+            padding: 0.75rem 1.5rem !important;
+            border-radius: 12px !important;
+            transition: all 0.3s ease !important;
+        }
+        .stTabs [data-baseweb="tab"]:hover {
+            background: rgba(67, 97, 238, 0.1) !important;
+        }
+        .stTabs [aria-selected="true"] {
+            background: rgba(67, 97, 238, 0.1) !important;
+            color: var(--primary) !important;
+            font-weight: 600 !important;
+        }
+        
+        /* Slider */
+        .stSlider [role="slider"] {
+            background-color: var(--primary) !important;
+        }
+        .stSlider [data-testid="stThumbValue"] {
+            color: var(--primary) !important;
+            font-weight: 500 !important;
+        }
+        
+        /* Text areas */
+        .stTextArea [data-baseweb=base-input] {
+            min-height: 300px;
+            border-radius: 12px !important;
+            padding: 1.25rem !important;
+            font-size: 1rem !important;
+            line-height: 1.6 !important;
         }
         
         /* Download button */
         .download-btn {
-            margin-top: 2rem;
-            font-size: 1.4rem !important;
-            padding: 1rem !important;
+            background: linear-gradient(135deg, var(--success) 0%, #3a86ff 100%) !important;
+            margin-top: 1.5rem;
         }
         
-        /* Footer */
-        .stCaption {
-            font-size: 1.2rem !important;
+        /* Status messages */
+        .stAlert {
+            border-radius: 12px !important;
+            border-left: none !important;
+        }
+        .stError {
+            background-color: rgba(239, 35, 60, 0.1) !important;
+            color: var(--danger) !important;
+        }
+        .stInfo {
+            background-color: rgba(67, 97, 238, 0.1) !important;
+            color: var(--primary) !important;
         }
         
-        /* Spacing adjustments */
-        .stSpinner {
-            margin: 2rem 0 !important;
+        /* Progress spinner */
+        .stSpinner > div {
+            border-color: var(--primary) transparent transparent transparent !important;
         }
-        .stMarkdown {
-            margin: 1.5rem 0 !important;
+        
+        /* Step indicators */
+        .step {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.25rem;
+        }
+        .step-number {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 0.75rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+        .step-text {
+            font-size: 0.95rem;
+            color: var(--dark);
         }
     </style>
 """, unsafe_allow_html=True)
@@ -178,20 +216,39 @@ def download_youtube_audio(youtube_url):
                 'preferredcodec': 'mp3',
             }],
             'quiet': True,
+            'extract_flat': True,
+            'force_ipv4': True,
+            'socket_timeout': 30,
+            'retries': 10,
+            'fragment_retries': 10,
+            'no_check_certificate': True,
+            'ignoreerrors': True,
+            'no_warnings': True,
+            'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            'cookiefile': 'cookies.txt' if os.path.exists('cookies.txt') else None,
         }
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             st.info("Downloading YouTube audio...")
-            ydl.download([youtube_url])
-        
-        return tmp_path.replace('.mp3', '') + '.mp3'
+            try:
+                ydl.download([youtube_url])
+                return tmp_path.replace('.mp3', '') + '.mp3'
+            except Exception as e:
+                st.error(f"YouTube download failed: {str(e)}")
+                st.info("If the issue persists, try:")
+                st.markdown("""
+                    1. Export YouTube cookies using a browser extension
+                    2. Place cookies.txt in the same directory
+                    3. Try again
+                """)
+                return None
     except Exception as e:
         st.error(f"YouTube download failed: {str(e)}")
         return None
 
 def process_audio(audio_path, sentences_count):
     try:
-        with st.spinner("Transcribing..."):
+        with st.spinner("Transcribing audio..."):
             result = model.transcribe(audio_path)
             text = result["text"]
         
@@ -207,29 +264,32 @@ def process_audio(audio_path, sentences_count):
 with st.sidebar:
     st.markdown('<div class="sidebar-title">⚙️ Settings</div>', unsafe_allow_html=True)
     
-    with st.container():
-        st.markdown('<div class="sidebar-section">', unsafe_allow_html=True)
-        st.markdown("**Summary Length**", help="Adjust how many sentences the summary should contain")
-        sentences_count = st.slider(
-            " ",
-            min_value=1,
-            max_value=10,
-            value=3,
-            label_visibility="collapsed"
-        )
-        st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown("**Summary Length**")
+    sentences_count = st.slider(
+        "Select number of sentences for summary",
+        min_value=1,
+        max_value=10,
+        value=3,
+        label_visibility="collapsed"
+    )
     
     st.markdown("---")
     
-    with st.container():
-        st.markdown('<div class="sidebar-section">', unsafe_allow_html=True)
-        st.markdown('<div class="sidebar-instructions">', unsafe_allow_html=True)
-        st.markdown("**How to use:**")
-        st.markdown("1. Enter YouTube URL or upload file")
-        st.markdown("2. Click process button")
-        st.markdown("3. View and download your summary")
-        st.markdown('</div>', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown("### How to use")
+    st.markdown("""
+        <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-text">Enter YouTube URL or upload file</div>
+        </div>
+        <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-text">Click the Process button</div>
+        </div>
+        <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-text">View and download your summary</div>
+        </div>
+    """, unsafe_allow_html=True)
 
 # Main Content
 st.title("🎥 Video Summarizer")
@@ -243,30 +303,27 @@ if 'summary' not in st.session_state:
     st.session_state.summary = None
 
 with tab1:
-    col1, col2 = st.columns([3, 1])
-    with col1:
-        youtube_url = st.text_input(
-            "Enter YouTube URL:",
-            placeholder="https://www.youtube.com/watch?v=...",
-            label_visibility="collapsed"
-        )
-    with col2:
-        if st.button("Process ▶️", key="youtube_btn"):
-            if not youtube_url:
-                st.error("Please enter a YouTube URL")
-            else:
-                audio_path = download_youtube_audio(youtube_url)
-                if audio_path:
-                    st.session_state.summary = process_audio(audio_path, sentences_count)
-                    os.unlink(audio_path)
+    youtube_url = st.text_input(
+        "Enter YouTube URL",
+        placeholder="https://www.youtube.com/watch?v=...",
+        label_visibility="collapsed"
+    )
+    if st.button("Process Video", key="youtube_btn"):
+        if not youtube_url:
+            st.error("Please enter a YouTube URL")
+        else:
+            audio_path = download_youtube_audio(youtube_url)
+            if audio_path:
+                st.session_state.summary = process_audio(audio_path, sentences_count)
+                os.unlink(audio_path)
 
 with tab2:
     uploaded_file = st.file_uploader(
-        "Choose a file",
+        "Upload audio or video file",
         type=["mp3", "mp4", "wav", "m4a"],
         label_visibility="collapsed"
     )
-    if uploaded_file and st.button("Process ▶️", key="file_btn"):
+    if uploaded_file and st.button("Process File", key="file_btn"):
         with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
             tmp_file.write(uploaded_file.getvalue())
             tmp_path = tmp_file.name
@@ -276,25 +333,23 @@ with tab2:
 
 # Display summary and download button
 if st.session_state.summary:
-    st.subheader("Summary")
+    st.subheader("📝 Summary")
     st.text_area(
-        "Summary Output",
+        "Summary",
         value=st.session_state.summary,
-        height=400,  # Increased from 200 to 400
-        label_visibility="collapsed",
-        key="summary_output"
+        height=300,
+        label_visibility="collapsed"
     )
     
-    # Download button
     st.download_button(
-        label="📥 Download Summary",
+        label="Download Summary",
         data=st.session_state.summary,
         file_name="video_summary.txt",
         mime="text/plain",
         key="download_btn",
-        help="Click to download the summary as a text file"
+        use_container_width=True
     )
 
 # Footer
 st.markdown("---")
-st.caption("Powered by OpenAI Whisper and Streamlit")
+st.caption("✨ Powered by OpenAI Whisper and Streamlit")
